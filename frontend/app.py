@@ -5,7 +5,7 @@ from codeinterpreterapi import CodeInterpreterSession
 from codeinterpreterapi.schema.file import File
 
 
-async def main():
+async def runner(session: CodeInterpreterSession):
     # App title
     st.set_page_config(page_title="Code Interpreter API 🚀", layout="wide")
     # Replicate Credentials
@@ -38,7 +38,6 @@ async def main():
             )
 
     if settings.OPENAI_API_KEY is not None:
-        session = st.session_state["session"]
         # Store LLM generated responses
         if "messages" not in st.session_state.keys():
             st.session_state.messages = [
@@ -113,15 +112,11 @@ async def main():
             st.session_state.messages.append(message)
 
 
-if "session" not in st.session_state and settings.OPENAI_API_KEY is not None:
+async def main():
+    async with CodeInterpreterSession() as session:
+        await runner(session)
+        
 
-    async def get_session():
-        async with CodeInterpreterSession(
-            model="gpt-3.5-turbo", openai_api_key=settings.OPENAI_API_KEY
-        ) as session:
-            st.session_state["session"] = session
+if __name__ == "__main__":
+    asyncio.run(main())
 
-    asyncio.run(get_session())
-
-
-asyncio.run(main())
